@@ -1,0 +1,22 @@
+{
+  "printers": [
+    {
+      "localname": "HP Universal Printing PCL 5 (v6.1.0)",
+      "active": true,
+      "port": 9100,
+      "subnets": "192.168.1.0/24, ::/32",
+      "log": "ape",
+      "storejobs": true,
+      "jobspath": "jobs/HP1"
+    },
+    {
+      "localname": "HP3524",
+      "active": true,
+      "port": 9101,
+      "subnets": "192.168.22.0/24",
+      "log": "p",
+      "storejobs": true,
+      "jobspath": ""
+    }
+  ]
+}
