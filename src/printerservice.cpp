@@ -33,8 +33,9 @@ bool PrinterService::loadSettings()
     QString configName(paths.at(1) + "/settings.json");
 
     QFile settingsFile(configName);
+    QString logString;
     if (!settingsFile.open(QIODevice::ReadOnly)) {
-        QString logString = "Couldn't open config file: " + configName;
+        logString = "Couldn't open config file: " + configName;
 #if defined(SERVICE_LOG_TO_FILE)
         m_logger->logMessage(logString, Logger::LogError);
 #else
@@ -42,6 +43,13 @@ bool PrinterService::loadSettings()
 #endif
         return false;
     }
+
+    logString = "Open config file \"" + configName + "\"";
+#if defined(SERVICE_LOG_TO_FILE)
+    m_logger->logMessage(logString, Logger::LogInfo);
+#else
+    logMessage(logString, MessageType::Information);
+#endif
 
     QByteArray jsonData = settingsFile.readAll();
     settingsFile.close();
