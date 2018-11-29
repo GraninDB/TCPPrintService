@@ -19,7 +19,9 @@ TCPPrintService
 
 
 	Возможен запуск как приложения командой TCPPrintService.exe -exec.
-	
+	По умолчанию все сообщения сервис записывает в event log.
+	Для того, чтобы сообщения записывались в файл, необходимо перекомпилировать проект с
+		добавлением переменной DEFINES += SERVICE_LOG_TO_FILE
 
 ## Пример файла настроек
 
@@ -54,6 +56,10 @@ TCPPrintService
 	storejobs	- (true/false) сохранять файлы заданий в файл
 	jobspath	- путь, по которому будут сохраняться задания
 
+	Файл настроек должен лежать в папке QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation);
+	Для Windows 10 - C:\ProgramData\TCPPrintService\
+	
+	
 ## Параметры командной строки
 TCPPrintService.exe -help
 
@@ -77,4 +83,4 @@ and Unix daemons.
 
 https://github.com/qtproject/qt-solutions/tree/master/qtservice
 
-Проект был скомпилирован с использованием 
+Проект был скомпилирован с использованием Qt 5.11.2
