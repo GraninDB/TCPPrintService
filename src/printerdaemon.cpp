@@ -27,6 +27,12 @@ void PrinterDaemon::incomingConnection(int socket)
     QTcpSocket* s = new QTcpSocket(this);
     s->setSocketDescriptor(socket);
 
+    if (m_settings.subnets.count() == 0) {
+        connect(s, SIGNAL(readyRead()), this, SLOT(onClientRead()));
+        connect(s, SIGNAL(disconnected()), this, SLOT(onClientClose()));
+        return;
+    }
+
     for (int i=0; i<m_settings.subnets.count(); i++){
         if (s->peerAddress().isInSubnet(m_settings.subnets[i])) {
             connect(s, SIGNAL(readyRead()), this, SLOT(onClientRead()));
