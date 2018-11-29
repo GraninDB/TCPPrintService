@@ -3,10 +3,14 @@
 #include <QFile>
 #include <QDebug>
 #include <QDateTime>
+#include <QStandardPaths>
 
 Logger::Logger()
 {
-    m_file = new QFile("TCPPrintService.log");
+    QStringList paths = QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation);
+
+    QString logName(paths.at(1) + "/TCPPrintService.log");
+    m_file = new QFile(logName);
     if (!m_file->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
         qDebug() << "Log file open error";
         delete m_file;
