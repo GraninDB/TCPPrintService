@@ -27,6 +27,16 @@ void PrinterDaemon::incomingConnection(int socket)
     QTcpSocket* s = new QTcpSocket(this);
     s->setSocketDescriptor(socket);
 
+    QString logString;
+
+    logString = "Local address: " + s->localAddress().toString() +
+            "protocol: " + QString::number(s->localAddress().protocol());
+#if defined(SERVICE_LOG_TO_FILE)
+    m_logger->logMessage(logString, Logger::LogAccess);
+#else
+    QtServiceBase::instance()->logMessage(logString, QtServiceBase::MessageType::Information);
+#endif
+
     if (m_settings.subnets.count() == 0) {
         connect(s, SIGNAL(readyRead()), this, SLOT(onClientRead()));
         connect(s, SIGNAL(disconnected()), this, SLOT(onClientClose()));
@@ -39,8 +49,8 @@ void PrinterDaemon::incomingConnection(int socket)
             connect(s, SIGNAL(disconnected()), this, SLOT(onClientClose()));
 
             if (m_settings.log | PrinterDaemon::LogAccess) {
-                QString logString("Access from " + s->peerAddress().toString() +
-                    " to printer \"" + m_settings.localPrinterName + "\" is allowed");
+                logString = "Access from " + s->peerAddress().toString() +
+                    " to printer \"" + m_settings.localPrinterName + "\" is allowed";
 #if defined(SERVICE_LOG_TO_FILE)
                 m_logger->logMessage(logString, Logger::LogAccess);
 #else
@@ -54,8 +64,8 @@ void PrinterDaemon::incomingConnection(int socket)
     s->disconnect();
 
     if (m_settings.log | PrinterDaemon::LogAccess) {
-        QString logString("Access from " + s->peerAddress().toString() +
-            " to printer \"" + m_settings.localPrinterName + "\" is denied");
+        logString = "Access from " + s->peerAddress().toString() +
+            " to printer \"" + m_settings.localPrinterName + "\" is denied";
 #if defined(SERVICE_LOG_TO_FILE)
         m_logger->logMessage(logString, Logger::LogAccess);
 #else
