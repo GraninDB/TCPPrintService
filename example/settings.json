@@ -1,4 +1,5 @@
 {
+  "logtype": "system",
   "printers": [
     {
       "localname": "HP Universal Printing PCL 5 (v6.1.0)",

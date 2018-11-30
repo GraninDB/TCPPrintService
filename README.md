@@ -11,7 +11,8 @@ TCPPrintService
 	1. Скомпилировать проект.
 	2. Скопировать TCPPrintService.exe в любой каталог.
 	3. Скопировать нужные библиотеки Qt.
-	4. Создать файл настроек.
+	4. Создать файл настроек. 
+		Для Windows 10 C:/ProgramData/TCPPrintService/settings.json
 	5. Установить сервис TCPPrintService.exe -install.
 	6. Если необходимо, настроить сервис для автоматического запуска.
 	7. Открыть входящие порты (9100 ...).
@@ -19,13 +20,23 @@ TCPPrintService
 
 
 	Возможен запуск как приложения командой TCPPrintService.exe -exec.
-	По умолчанию все сообщения сервис записывает в event log.
-	Для того, чтобы сообщения записывались в файл, необходимо перекомпилировать проект с
-		добавлением переменной DEFINES += SERVICE_LOG_TO_FILE
+	Если приложение скомпилировано с опцией DEFINES += LOG_TO_CONSOLE, то при запуске с параметром -exec 
+	все сообщения и отладочная информация будут выводится в консоль.
+	
+	Пример запуска
+		$ TCPPrintService.exe -e
+		configName "C:/ProgramData/TCPPrintService/settings.json"
+		logType "textfile"
+		Log file name is "C:/ProgramData/TCPPrintService/TCPPrintService.log"
+		"Service started successful" 5
+
+	По умолчанию (если параметр не указан) все сообщения сервис записывает в event log - "logtype": "system".
+	Для того, чтобы сообщения записывались в файле настроек необходимо указать параметр "logtype": "textfile"  
 
 ## Пример файла настроек
 
 	{
+	  "logtype: "system",
 	  "printers": [
 		{
 		  "localname": "HP Universal Printing PCL 5 (v6.1.0)",
@@ -47,18 +58,16 @@ TCPPrintService
 		}
 	  ]
 	}
+	logtype		- тип журнала "system" - event log, "textfile" - Для Windows 10 это файл C:/ProgramData/TCPPrintService/TCPPrintService.log
 	
 	localname 	- имя локального принтера в системе
 	active		- (true/false) активность сервиса для указанного принтера
 	port		- номер порта для указанного принтера
 	subnets		- подсети с которых разрешен досут к принтеру (подсети указываются через запятую)
+					Если указана пустая строка, то проверка не производится.
 	log			- логирование (a - access, p - print, e - error, d - debug)
 	storejobs	- (true/false) сохранять файлы заданий в файл
 	jobspath	- путь, по которому будут сохраняться задания
-
-	Файл настроек должен лежать в папке QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation);
-	Для Windows 10 - C:\ProgramData\TCPPrintService\
-	
 	
 ## Параметры командной строки
 TCPPrintService.exe -help

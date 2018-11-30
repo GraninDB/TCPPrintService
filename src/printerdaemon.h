@@ -14,14 +14,6 @@ class PrinterDaemon : public QTcpServer
 {
     Q_OBJECT
 public:
-    enum LogType {
-        LogNone = 0,
-        LogPrintJob = 1,
-        LogErrors = 2,
-        LogDebug = 4,
-        LogAccess = 8
-    };
-
     class DaemonSettings
     {
     public:
