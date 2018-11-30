@@ -122,9 +122,10 @@ void PrinterService::start()
                 m_logger->logMessage(logString, Logger::Error);
                 app->exit(-98);
                 error = true;
+            } else {
+                m_daemons.append(daemon);
             }
         }
-        m_daemons.append(daemon);
     }
 
     if (!error) {
