@@ -112,18 +112,18 @@ void PrinterService::start()
     if (!loadSettings()) {
         app->exit(-99);
         error = true;
-    }
-
-    foreach (const PrinterDaemon::DaemonSettings &ds, m_daemonSettings) {
-        PrinterDaemon *daemon = new PrinterDaemon(ds, m_logger, app);
-        if (ds.isActive) {
-            if (!daemon->startListening()) {
-                logString = QString("Failed to start. Error: %1").arg(daemon->errorString());
-                m_logger->logMessage(logString, Logger::Error);
-                app->exit(-98);
-                error = true;
-            } else {
-                m_daemons.append(daemon);
+    } else {
+        foreach (const PrinterDaemon::DaemonSettings &ds, m_daemonSettings) {
+            PrinterDaemon *daemon = new PrinterDaemon(ds, m_logger, app);
+            if (ds.isActive) {
+                if (!daemon->startListening()) {
+                    logString = QString("Failed to start. Error: %1").arg(daemon->errorString());
+                    m_logger->logMessage(logString, Logger::Error);
+                    app->exit(-98);
+                    error = true;
+                } else {
+                    m_daemons.append(daemon);
+                }
             }
         }
     }
