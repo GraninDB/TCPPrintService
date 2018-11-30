@@ -78,7 +78,7 @@ void PrinterDaemon::onClientRead()
     if (m_disabled)
         return;
 
-    QTcpSocket* socket = (QTcpSocket*)sender();
+    QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
 
     if (socket->bytesAvailable() > 0) {
         clientData += socket->readAll();
@@ -87,13 +87,13 @@ void PrinterDaemon::onClientRead()
 
 void PrinterDaemon::onClientClose()
 {
-    QTcpSocket* socket = (QTcpSocket*)sender();
+    QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
 
     clientData += socket->readAll();
     long dataLength = clientData.length();
 
     LPBYTE lpData;
-    lpData = (unsigned char*)(clientData.data());
+    lpData = reinterpret_cast<unsigned char*>(clientData.data());
 
     LPTSTR pn = new wchar_t[m_settings.localPrinterName.length() + 1];
     m_settings.localPrinterName.toWCharArray(pn);
@@ -170,7 +170,7 @@ void PrinterDaemon::storePrintJobToFile()
 
         QFile prnFile(fileName);
 
-        QTcpSocket* socket = (QTcpSocket*)sender();
+        QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
 
         if (!prnFile.open(QIODevice::WriteOnly)) {
             if (m_settings.log | Logger::Error) {
