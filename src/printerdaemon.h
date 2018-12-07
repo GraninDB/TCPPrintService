@@ -27,7 +27,7 @@ public:
         QString jobsPath;
     };
 
-    PrinterDaemon(DaemonSettings sett, Logger* logger, QObject* parent = 0);
+    PrinterDaemon(DaemonSettings sett, Logger* logger, QObject* parent = nullptr);
 
     bool startListening();
     void incomingConnection(int socket);
@@ -42,7 +42,7 @@ private slots:
 private:
     bool m_disabled;
     DaemonSettings m_settings;
-    Logger* m_logger = 0;
+    Logger* m_logger = nullptr;
     QByteArray clientData;
     void storePrintJobToFile();
 };
