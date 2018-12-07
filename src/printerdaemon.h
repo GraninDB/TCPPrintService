@@ -19,6 +19,7 @@ public:
     public:
         QString localPrinterName;
         bool isActive;
+        QHostAddress listen;
         quint16 port;
         QList<QPair<QHostAddress, int>> subnets;
         int log;

@@ -13,7 +13,7 @@ PrinterDaemon::PrinterDaemon(DaemonSettings sett, Logger *logger, QObject *paren
 
 bool PrinterDaemon::startListening()
 {
-    return listen(QHostAddress::Any, m_settings.port);
+    return listen(m_settings.listen, m_settings.port);
 }
 
 void PrinterDaemon::incomingConnection(int socket)

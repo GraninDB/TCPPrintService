@@ -77,6 +77,13 @@ bool PrinterService::loadSettings()
             }
         }
 
+        QString address = v.toObject().value("listen").toString();
+        if (address.isNull() || address.isEmpty()) {
+            ds.listen = QHostAddress::Any;
+        } else {
+            ds.listen = QHostAddress(address);
+        }
+
         QString log = v.toObject().value("log").toString();
         ds.log = Logger::None;
         if (log.toLower().indexOf("p") >=0 ) {
