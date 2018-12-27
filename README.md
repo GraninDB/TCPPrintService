@@ -39,6 +39,7 @@ TCPPrintService
 	  "logtype: "system",
 	  "printers": [
 		{
+	      "listen": "192.168.0.1",
 		  "localname": "HP Universal Printing PCL 5 (v6.1.0)",
 		  "active": true,
 		  "port": 9100,
@@ -58,6 +59,7 @@ TCPPrintService
 		}
 	  ]
 	}
+	listen		- регистрируется только на указанном адресе. Если не указано, то сервис прослушивает на всех интерфейсах 
 	logtype		- тип журнала "system" - event log, "textfile" - Для Windows 10 это файл C:/ProgramData/TCPPrintService/TCPPrintService.log
 	
 	localname 	- имя локального принтера в системе

@@ -83,7 +83,9 @@ bool PrinterService::loadSettings()
         } else {
             ds.listen = QHostAddress(address);
         }
-
+#ifdef LOG_TO_CONSOLE
+        qInfo() << "listen" << ds.listen;
+#endif
         QString log = v.toObject().value("log").toString();
         ds.log = Logger::None;
         if (log.toLower().indexOf("p") >=0 ) {
