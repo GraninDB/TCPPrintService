@@ -8,14 +8,12 @@ PrinterDaemon::PrinterDaemon(DaemonSettings sett, Logger *logger, QObject *paren
     : QTcpServer(parent), m_disabled(false)
 {
     m_settings = sett;
-#if defined(SERVICE_LOG_TO_FILE)
     m_logger = logger;
-#endif
 }
 
 bool PrinterDaemon::startListening()
 {
-    return listen(QHostAddress::Any, m_settings.port);
+    return listen(m_settings.listen, m_settings.port);
 }
 
 void PrinterDaemon::incomingConnection(int socket)
@@ -26,6 +24,14 @@ void PrinterDaemon::incomingConnection(int socket)
 
     QTcpSocket* s = new QTcpSocket(this);
     s->setSocketDescriptor(socket);
+
+    QString logString;
+
+    if (m_settings.log == Logger::Debug) {
+        logString = "Local address: " + s->localAddress().toString() +
+                "protocol: " + QString::number(s->localAddress().protocol());
+        m_logger->logMessage(logString, Logger::Debug);
+    }
 
     if (m_settings.subnets.count() == 0) {
         connect(s, SIGNAL(readyRead()), this, SLOT(onClientRead()));
@@ -38,14 +44,10 @@ void PrinterDaemon::incomingConnection(int socket)
             connect(s, SIGNAL(readyRead()), this, SLOT(onClientRead()));
             connect(s, SIGNAL(disconnected()), this, SLOT(onClientClose()));
 
-            if (m_settings.log | PrinterDaemon::LogAccess) {
-                QString logString("Access from " + s->peerAddress().toString() +
-                    " to printer \"" + m_settings.localPrinterName + "\" is allowed");
-#if defined(SERVICE_LOG_TO_FILE)
-                m_logger->logMessage(logString, Logger::LogAccess);
-#else
-                QtServiceBase::instance()->logMessage(logString, QtServiceBase::MessageType::Information);
-#endif
+            if (m_settings.log | Logger::Access) {
+                logString = "Access from " + s->peerAddress().toString() +
+                    " to printer \"" + m_settings.localPrinterName + "\" is allowed";
+                m_logger->logMessage(logString, Logger::Access);
             }
             return;
         }
@@ -53,14 +55,10 @@ void PrinterDaemon::incomingConnection(int socket)
 
     s->disconnect();
 
-    if (m_settings.log | PrinterDaemon::LogAccess) {
-        QString logString("Access from " + s->peerAddress().toString() +
-            " to printer \"" + m_settings.localPrinterName + "\" is denied");
-#if defined(SERVICE_LOG_TO_FILE)
-        m_logger->logMessage(logString, Logger::LogAccess);
-#else
-        QtServiceBase::instance()->logMessage(logString, QtServiceBase::MessageType::Warning);
-#endif
+    if (m_settings.log | Logger::Access) {
+        logString = "Access from " + s->peerAddress().toString() +
+            " to printer \"" + m_settings.localPrinterName + "\" is denied";
+        m_logger->logMessage(logString, Logger::Access);
     }
 
 }
@@ -80,7 +78,7 @@ void PrinterDaemon::onClientRead()
     if (m_disabled)
         return;
 
-    QTcpSocket* socket = (QTcpSocket*)sender();
+    QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
 
     if (socket->bytesAvailable() > 0) {
         clientData += socket->readAll();
@@ -89,28 +87,29 @@ void PrinterDaemon::onClientRead()
 
 void PrinterDaemon::onClientClose()
 {
-    QTcpSocket* socket = (QTcpSocket*)sender();
+    QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
 
     clientData += socket->readAll();
     long dataLength = clientData.length();
 
     LPBYTE lpData;
-    lpData = (unsigned char*)(clientData.data());
+    lpData = reinterpret_cast<unsigned char*>(clientData.data());
 
     LPTSTR pn = new wchar_t[m_settings.localPrinterName.length() + 1];
     m_settings.localPrinterName.toWCharArray(pn);
     pn[m_settings.localPrinterName.length()] = '\0';
 
     if (sendRawDataToPrinter(pn, lpData, dataLength)) {
-        if (m_settings.log | PrinterDaemon::LogPrintJob) {
+        if (m_settings.log | Logger::Print) {
             QString logString("Print job from " + socket->peerAddress().toString() +
                 " completed successful");
-#if defined(SERVICE_LOG_TO_FILE)
-            m_logger->logMessage(logString, Logger::LogPrint);
-#else
-            QtServiceBase::instance()->logMessage(logString, QtServiceBase::MessageType::Information);
-#endif
-
+            m_logger->logMessage(logString, Logger::Print);
+        }
+    } else {
+        if (m_settings.log | Logger::Error) {
+            QString logString("Print job from " + socket->peerAddress().toString() +
+                " finished with error");
+            m_logger->logMessage(logString, Logger::Print);
         }
     }
 
@@ -171,29 +170,21 @@ void PrinterDaemon::storePrintJobToFile()
 
         QFile prnFile(fileName);
 
-        QTcpSocket* socket = (QTcpSocket*)sender();
+        QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
 
         if (!prnFile.open(QIODevice::WriteOnly)) {
-            if (m_settings.log | PrinterDaemon::LogErrors) {
+            if (m_settings.log | Logger::Error) {
                 QString logString("Can not store print job from " + socket->peerAddress().toString());
-#if defined(SERVICE_LOG_TO_FILE)
-                m_logger->logMessage(logString, Logger::LogError);
-#else
-                QtServiceBase::instance()->logMessage(logString, QtServiceBase::MessageType::Error);
-#endif
+                m_logger->logMessage(logString, Logger::Error);
             }
         } else {
             prnFile.write(clientData);
             prnFile.close();
 
-            if (m_settings.log | PrinterDaemon::LogPrintJob) {
+            if (m_settings.log | Logger::Print) {
                 QString logString("Print job from " + socket->peerAddress().toString() +
                     " stored successful with filename \"" + uuidString + "\"");
-#if defined(SERVICE_LOG_TO_FILE)
-                m_logger->logMessage(logString, Logger::LogPrint);
-#else
-                QtServiceBase::instance()->logMessage(logString, QtServiceBase::MessageType::Information);
-#endif
+                m_logger->logMessage(logString, Logger::Print);
             }
         }
     }

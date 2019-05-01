@@ -14,16 +14,12 @@ PrinterService::PrinterService(int argc, char **argv) :
     setServiceDescription("TCP Print service");
     setServiceFlags(QtServiceBase::CanBeSuspended);
 
-#if defined(SERVICE_LOG_TO_FILE)
     m_logger = new Logger();
-#endif
 }
 
 PrinterService::~PrinterService()
 {
-#if defined(SERVICE_LOG_TO_FILE)
     delete m_logger;
-#endif
 }
 
 bool PrinterService::loadSettings()
@@ -32,30 +28,37 @@ bool PrinterService::loadSettings()
 
     QString configName(paths.at(1) + "/settings.json");
 
+#ifdef LOG_TO_CONSOLE
+    qInfo() << "configName" << configName;
+#endif
     QFile settingsFile(configName);
     QString logString;
     if (!settingsFile.open(QIODevice::ReadOnly)) {
         logString = "Couldn't open config file: " + configName;
-#if defined(SERVICE_LOG_TO_FILE)
-        m_logger->logMessage(logString, Logger::LogError);
-#else
-        logMessage(logString, MessageType::Error);
+        m_logger->setJournalType(Logger::System);
+        m_logger->logMessage(logString, Logger::Error);
+#ifdef LOG_TO_CONSOLE
+    qInfo() << "Couldn't open config file: " + configName;
 #endif
         return false;
     }
-
-    logString = "Open config file \"" + configName + "\"";
-#if defined(SERVICE_LOG_TO_FILE)
-    m_logger->logMessage(logString, Logger::LogInfo);
-#else
-    logMessage(logString, MessageType::Information);
-#endif
 
     QByteArray jsonData = settingsFile.readAll();
     settingsFile.close();
 
     QJsonDocument jsonDoc(QJsonDocument::fromJson(jsonData));
     QJsonObject jsonObject = jsonDoc.object();
+
+    QJsonValue logType = jsonObject.value("logtype");
+#ifdef LOG_TO_CONSOLE
+    qInfo() << "logType" << logType.toString().toLower();
+#endif
+    if (logType.toString().toLower() == "textfile") {
+        m_logger->setJournalType(Logger::TextFile);
+    } else {
+        m_logger->setJournalType(Logger::System);
+    }
+
     QJsonValue printersValue = jsonObject.value("printers");
     QJsonArray jsonArray = printersValue.toArray();
 
@@ -74,19 +77,28 @@ bool PrinterService::loadSettings()
             }
         }
 
+        QString address = v.toObject().value("listen").toString();
+        if (address.isNull() || address.isEmpty()) {
+            ds.listen = QHostAddress::Any;
+        } else {
+            ds.listen = QHostAddress(address);
+        }
+#ifdef LOG_TO_CONSOLE
+        qInfo() << "listen" << ds.listen;
+#endif
         QString log = v.toObject().value("log").toString();
-        ds.log = PrinterDaemon::LogNone;
-        if (log.toLower().indexOf("p")>=0) {
-            ds.log |= PrinterDaemon::LogPrintJob;
+        ds.log = Logger::None;
+        if (log.toLower().indexOf("p") >=0 ) {
+            ds.log |= Logger::Print;
         }
-        if (log.toLower().indexOf("e")>=0) {
-            ds.log |= PrinterDaemon::LogErrors;
+        if (log.toLower().indexOf("e") >=0 ) {
+            ds.log |= Logger::Error;
         }
-        if (log.toLower().indexOf("d")>=0) {
-            ds.log |= PrinterDaemon::LogDebug;
+        if (log.toLower().indexOf("d") >=0 ) {
+            ds.log |= Logger::Debug;
         }
-        if (log.toLower().indexOf("a")>=0) {
-            ds.log |= PrinterDaemon::LogAccess;
+        if (log.toLower().indexOf("a") >=0 ) {
+            ds.log |= Logger::Access;
         }
 
         QStringList subnets = v.toObject().value("subnets").toString().replace(" ", "").split(',');
@@ -109,33 +121,26 @@ void PrinterService::start()
     if (!loadSettings()) {
         app->exit(-99);
         error = true;
-    }
-
-    foreach (const PrinterDaemon::DaemonSettings &ds, m_daemonSettings) {
-        PrinterDaemon *daemon = new PrinterDaemon(ds, m_logger, app);
-        if (ds.isActive) {
-            if (!daemon->startListening()) {
-                logString = QString("Failed to start. Error: %1").arg(daemon->errorString());
-#if defined(SERVICE_LOG_TO_FILE)
-                m_logger->logMessage(logString, Logger::LogError);
-#else
-                logMessage(logString, MessageType::Error);
-#endif
-                app->exit(-98);
-                error = true;
+    } else {
+        foreach (const PrinterDaemon::DaemonSettings &ds, m_daemonSettings) {
+            PrinterDaemon *daemon = new PrinterDaemon(ds, m_logger, app);
+            if (ds.isActive) {
+                if (!daemon->startListening()) {
+                    logString = QString("Failed to start. Error: %1").arg(daemon->errorString());
+                    m_logger->logMessage(logString, Logger::Error);
+                    app->exit(-98);
+                    error = true;
+                } else {
+                    m_daemons.append(daemon);
+                }
             }
         }
-        m_daemons.append(daemon);
     }
 
     if (!error) {
         logString = QString("Service started successful");
-#if defined(SERVICE_LOG_TO_FILE)
-        m_logger->logMessage(logString, Logger::LogInfo);
-#else
-        logMessage(logString, MessageType::Information);
-#endif
-    }
+        m_logger->logMessage(logString, Logger::Info);
+   }
 }
 
 void PrinterService::pause()

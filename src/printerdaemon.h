@@ -14,19 +14,12 @@ class PrinterDaemon : public QTcpServer
 {
     Q_OBJECT
 public:
-    enum LogType {
-        LogNone = 0,
-        LogPrintJob = 1,
-        LogErrors = 2,
-        LogDebug = 4,
-        LogAccess = 8
-    };
-
     class DaemonSettings
     {
     public:
         QString localPrinterName;
         bool isActive;
+        QHostAddress listen;
         quint16 port;
         QList<QPair<QHostAddress, int>> subnets;
         int log;
@@ -34,7 +27,7 @@ public:
         QString jobsPath;
     };
 
-    PrinterDaemon(DaemonSettings sett, Logger* logger, QObject* parent = 0);
+    PrinterDaemon(DaemonSettings sett, Logger* logger, QObject* parent = nullptr);
 
     bool startListening();
     void incomingConnection(int socket);
@@ -49,7 +42,7 @@ private slots:
 private:
     bool m_disabled;
     DaemonSettings m_settings;
-    Logger* m_logger = 0;
+    Logger* m_logger = nullptr;
     QByteArray clientData;
     void storePrintJobToFile();
 };
