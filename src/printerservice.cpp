@@ -29,7 +29,7 @@ bool PrinterService::loadSettings()
     QString configName(m_appDataFolder + "settings.json");
 
 #ifdef LOG_TO_CONSOLE
-    qInfo() << "configName" << configName;
+    qInfo() << "Config file name is" << configName;
 #endif
     QFile settingsFile(configName);
     QString logString;
@@ -51,7 +51,7 @@ bool PrinterService::loadSettings()
 
     QJsonValue logType = jsonObject.value("logtype");
 #ifdef LOG_TO_CONSOLE
-    qInfo() << "logType" << logType.toString().toLower();
+    qInfo() << "Loging type" << logType.toString().toLower();
 #endif
     if (logType.toString().toLower() == "textfile") {
         m_logger->setJournalType(Logger::TextFile);
@@ -76,16 +76,11 @@ bool PrinterService::loadSettings()
         if (!ds.jobsPath.isEmpty()) {
             QDir dir;
             if (!dir.exists(ds.jobsPath)) {
-                bool sucess = dir.mkpath(ds.jobsPath);
-#ifdef LOG_TO_CONSOLE
-                if (sucess) {
-                    qInfo() << "Folder created -" << ds.jobsPath;
+                if (dir.mkpath(ds.jobsPath)) {
+                    m_logger->logMessage("Folder created - " + ds.jobsPath, Logger::Info);
                 } else {
-                    qInfo() << "Couldn't create folder -" << ds.jobsPath;
+                    m_logger->logMessage("Couldn't create folder -" + ds.jobsPath, Logger::Error);
                 }
-#else
-                Q_UNUSED(sucess);
-#endif
             }
         }
 
@@ -95,9 +90,10 @@ bool PrinterService::loadSettings()
         } else {
             ds.listen = QHostAddress(address);
         }
-#ifdef LOG_TO_CONSOLE
-        qInfo() << "listen" << ds.listen;
-#endif
+
+        m_logger->logMessage("Listen address for printer \"" + ds.localPrinterName + "\" is " +
+            ds.listen.toString() + " port " + QString::number(ds.port), Logger::Info);
+
         QString log = v.toObject().value("log").toString();
         ds.log = Logger::None;
         if (log.toLower().indexOf("p") >=0 ) {

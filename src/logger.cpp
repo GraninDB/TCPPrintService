@@ -51,7 +51,37 @@ void Logger::logMessage(const QString &msg, LogType logType)
         return;
     }
 
-    qInfo() << msg << logType;
+    QString strLogType;
+
+    switch (logType) {
+    case Print: {
+        strLogType = "Print";
+        break;
+    }
+    case Error: {
+        strLogType = "Error";
+        break;
+    }
+    case Debug: {
+        strLogType = "Debug";
+        break;
+    }
+    case Access: {
+        strLogType = "Access";
+        break;
+    }
+    case Info: {
+        strLogType = "Info";
+        break;
+    }
+    case None: {
+        break;
+    }
+    }
+#ifdef LOG_TO_CONSOLE
+    qInfo() << strLogType << msg;
+#endif
+
     switch (m_journalType) {
     case Unknown:{
         return;
@@ -65,33 +95,7 @@ void Logger::logMessage(const QString &msg, LogType logType)
         QDateTime dt(QDateTime::currentDateTime());
 
         out << dt.toString(Qt::ISODate) << " " ;
-
-        switch (logType) {
-        case Print: {
-            out << "Print  ";
-            break;
-        }
-        case Error: {
-            out << "Error  ";
-            break;
-        }
-        case Debug: {
-            out << "Debug  ";
-            break;
-        }
-        case Access: {
-            out << "Access ";
-            break;
-        }
-        case Info: {
-            out << "Info   ";
-            break;
-        }
-        case None: {
-            break;
-        }
-        }
-
+        out << strLogType.leftJustified(7);
         out << msg << "\n";
         return;
     }
