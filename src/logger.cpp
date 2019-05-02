@@ -28,6 +28,9 @@ void Logger::setJournalType(Logger::JournalType type)
     if (m_journalType == TextFile) {
         QStringList paths = QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation);
 
+        QDebug qI = qInfo();
+        qI.noquote();
+
         QString logName(paths.at(1) + "/TCPPrintService.log");
         m_file = new QFile(logName);
         if (!m_file->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
@@ -35,9 +38,9 @@ void Logger::setJournalType(Logger::JournalType type)
             delete m_file;
             m_file = nullptr;
 
-            qInfo() << "Couldn't open log file" << logName;
+            qI << "Error  Couldn't open log file" << logName;
         } else {
-            qInfo() << "Log file name is" << logName;
+            qI << "Info   Log file name is" << logName;
         }
     }
 }
@@ -76,7 +79,9 @@ void Logger::logMessage(const QString &msg, LogType logType)
     }
     }
 
-    qInfo() << strLogType << msg;
+    QDebug qI = qInfo();
+    qI.noquote();
+    qI << strLogType.leftJustified(7) + msg;
 
     switch (m_journalType) {
     case Unknown:{
