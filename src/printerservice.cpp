@@ -103,7 +103,9 @@ bool PrinterService::loadSettings()
 
         QStringList subnets = v.toObject().value("subnets").toString().replace(" ", "").split(',');
         foreach (const QString &sn, subnets) {
-            ds.subnets.append(QHostAddress::parseSubnet(sn));
+            if (!sn.isEmpty()) {
+                ds.subnets.append(QHostAddress::parseSubnet(sn));
+            }
         }
 
         m_daemonSettings.append(ds);
