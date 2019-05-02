@@ -25,13 +25,13 @@ TCPPrintService
 	
 	Пример запуска
 		$ TCPPrintService.exe -exec
-		configName "C:/ProgramData/TCPPrintService/settings.json"
-		logType "textfile"
-		Log file name is "C:/ProgramData/TCPPrintService/TCPPrintService.log"
-		Folder created - "C:/ProgramData/TCPPrintService/jobs/HP Universal Printing PCL 5 (v6.1.0)"
-		listen QHostAddress("192.168.28.64")
-		listen QHostAddress(0.0.0.0)
-		"Service started successful" 5
+		Info   Config file name is "C:/ProgramData/TCPPrintService/settings.json"
+		Info   Logging type "textfile"
+		Info   Log file name is C:/ProgramData/TCPPrintService/TCPPrintService.log
+		Info   Folder created - C:/ProgramData/TCPPrintService/jobs/HP Universal Printing PCL 5 (v6.1.0)
+		Info   Listen address for printer "HP Universal Printing PCL 5 (v6.1.0)" is 192.168.0.1 port 9100
+		Info   Listen address for printer "HP3524" is 0.0.0.0 port 9101
+		Info   Service started successful
 
 	По умолчанию (если параметр не указан) все сообщения сервис записывает в event log - "logtype": "system".
 	Для того, чтобы сообщения записывались в файле настроек необходимо указать параметр "logtype": "textfile"  
