@@ -91,7 +91,7 @@ bool PrinterService::loadSettings()
 
         QString address = v.toObject().value("listen").toString();
         if (address.isNull() || address.isEmpty()) {
-            ds.listen = QHostAddress::Any;
+            ds.listen = QHostAddress::AnyIPv4;
         } else {
             ds.listen = QHostAddress(address);
         }

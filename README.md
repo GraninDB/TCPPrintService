@@ -31,7 +31,7 @@ TCPPrintService
 		Log file name is "C:/ProgramData/TCPPrintService/TCPPrintService.log"
 		Folder created - "C:/ProgramData/TCPPrintService/jobs/HP Universal Printing PCL 5 (v6.1.0)"
 		listen QHostAddress("192.168.28.64")
-		listen QHostAddress(QHostAddress::Any)
+		listen QHostAddress(0.0.0.0)
 		"Service started successful" 5
 
 	По умолчанию (если параметр не указан) все сообщения сервис записывает в event log - "logtype": "system".
@@ -63,9 +63,11 @@ TCPPrintService
 		}
 	  ]
 	}
-	listen		- регистрируется только на указанном адресе. Если не указано, то сервис прослушивает на всех интерфейсах 
+	listen		- регистрируется только на указанном адресе. Если не указано, или указана пустая строка, 
+					то сервис прослушивает на всех интерфейсах, но только с протоколом IPv4.
+					Для работы по протоколу IPv6 необходимо указать адрес IPv6 для прослушивания.
+					Работа по протоколу IPv6 не проверялась.
 	logtype		- тип журнала "system" - event log, "textfile" - Для Windows 10 это файл C:/ProgramData/TCPPrintService/TCPPrintService.log
-	
 	localname 	- имя локального принтера в системе
 	active		- (true/false) активность сервиса для указанного принтера
 	port		- номер порта для указанного принтера
