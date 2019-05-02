@@ -57,7 +57,7 @@ void PrinterDaemon::incomingConnection(int socket)
 
     if (m_settings.log | Logger::Access) {
         logString = "Access from " + s->peerAddress().toString() +
-            " to printer \"" + m_settings.localPrinterName + "\" is denied";
+            " to printer " + m_settings.localPrinterName + " is denied";
         m_logger->logMessage(logString, Logger::Access);
     }
 
@@ -174,7 +174,8 @@ void PrinterDaemon::storePrintJobToFile()
 
         if (!prnFile.open(QIODevice::WriteOnly)) {
             if (m_settings.log | Logger::Error) {
-                QString logString("Couldn't open file \"" + fileName + "\" for writing print job from " + socket->peerAddress().toString());
+                QString logString("Couldn't open file \"" + fileName +
+                    "\" for writing print job from " + socket->peerAddress().toString());
                 m_logger->logMessage(logString, Logger::Error);
             }
         } else {
@@ -182,7 +183,8 @@ void PrinterDaemon::storePrintJobToFile()
             prnFile.close();
             if (bytesWritten == -1){
                 if (m_settings.log | Logger::Error) {
-                    QString logString("Couldn't write print job to file \"" + fileName + "\" from " + socket->peerAddress().toString());
+                    QString logString("Couldn't write print job to file \"" + fileName +
+                        "\" from " + socket->peerAddress().toString());
                     m_logger->logMessage(logString, Logger::Error);
                 }
             } else {
