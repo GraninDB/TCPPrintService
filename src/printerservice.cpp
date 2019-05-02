@@ -28,18 +28,17 @@ bool PrinterService::loadSettings()
     m_appDataFolder = paths.at(1) + "/";
     QString configName(m_appDataFolder + "settings.json");
 
-#ifdef LOG_TO_CONSOLE
     qInfo() << "Config file name is" << configName;
-#endif
+
     QFile settingsFile(configName);
     QString logString;
     if (!settingsFile.open(QIODevice::ReadOnly)) {
         logString = "Couldn't open config file: " + configName;
         m_logger->setJournalType(Logger::System);
         m_logger->logMessage(logString, Logger::Error);
-#ifdef LOG_TO_CONSOLE
-    qInfo() << "Couldn't open config file: " + configName;
-#endif
+
+        qInfo() << "Couldn't open config file: " + configName;
+
         return false;
     }
 
@@ -50,9 +49,9 @@ bool PrinterService::loadSettings()
     QJsonObject jsonObject = jsonDoc.object();
 
     QJsonValue logType = jsonObject.value("logtype");
-#ifdef LOG_TO_CONSOLE
-    qInfo() << "Loging type" << logType.toString().toLower();
-#endif
+
+    qInfo() << "Logging type" << logType.toString().toLower();
+
     if (logType.toString().toLower() == "textfile") {
         m_logger->setJournalType(Logger::TextFile);
     } else {

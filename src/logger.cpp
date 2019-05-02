@@ -34,13 +34,10 @@ void Logger::setJournalType(Logger::JournalType type)
             QtServiceBase::instance()->logMessage("Log file open error", QtServiceBase::MessageType::Information);
             delete m_file;
             m_file = nullptr;
-#ifdef LOG_TO_CONSOLE
+
             qInfo() << "Couldn't open log file" << logName;
-#endif
         } else {
-#ifdef LOG_TO_CONSOLE
             qInfo() << "Log file name is" << logName;
-#endif
         }
     }
 }
@@ -78,9 +75,8 @@ void Logger::logMessage(const QString &msg, LogType logType)
         break;
     }
     }
-#ifdef LOG_TO_CONSOLE
+
     qInfo() << strLogType << msg;
-#endif
 
     switch (m_journalType) {
     case Unknown:{
