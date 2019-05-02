@@ -25,8 +25,8 @@ PrinterService::~PrinterService()
 bool PrinterService::loadSettings()
 {
     QStringList paths = QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation);
-
-    QString configName(paths.at(1) + "/settings.json");
+    m_appDataFolder = paths.at(1) + "/";
+    QString configName(m_appDataFolder + "settings.json");
 
 #ifdef LOG_TO_CONSOLE
     qInfo() << "configName" << configName;
@@ -70,10 +70,22 @@ bool PrinterService::loadSettings()
         ds.port = v.toObject().value("port").toInt();
 
         ds.jobsPath = v.toObject().value("jobspath").toString();
+        if (!QDir::isAbsolutePath(ds.jobsPath)) {
+            ds.jobsPath = m_appDataFolder + ds.jobsPath;
+        }
         if (!ds.jobsPath.isEmpty()) {
             QDir dir;
             if (!dir.exists(ds.jobsPath)) {
-                dir.mkpath(ds.jobsPath);
+                bool sucess = dir.mkpath(ds.jobsPath);
+#ifdef LOG_TO_CONSOLE
+                if (sucess) {
+                    qInfo() << "Folder created -" << ds.jobsPath;
+                } else {
+                    qInfo() << "Couldn't create folder -" << ds.jobsPath;
+                }
+#else
+                Q_UNUSED(sucess);
+#endif
             }
         }
 
