@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QUuid>
 #include <QMessageLogger>
+#include <QThread>
 
 PrinterDaemon::PrinterDaemon(DaemonSettings sett, Logger *logger, QObject *parent)
     : QTcpServer(parent), m_disabled(false)
@@ -13,7 +14,25 @@ PrinterDaemon::PrinterDaemon(DaemonSettings sett, Logger *logger, QObject *paren
 
 bool PrinterDaemon::startListening()
 {
-    return listen(m_settings.listen, m_settings.port);
+    bool successful = listen(m_settings.listen, m_settings.port);
+
+    if (!successful) {
+        if (serverError() == QAbstractSocket::SocketAddressNotAvailableError) {
+            for (int i = 0; i < m_settings.interfaceWaitTime / 10; i++) {
+                m_logger->logMessage("Wait 10 seconds for network interface with address " +
+                    m_settings.listen.toString(), Logger::Info);
+                QThread::sleep(10);
+                successful = listen(m_settings.listen, m_settings.port);
+                if (successful) {
+                    return successful;
+                }
+            }
+        } else {
+            m_logger->logMessage(errorString(), Logger::Error);
+        }
+    }
+
+    return successful;
 }
 
 void PrinterDaemon::incomingConnection(int socket)

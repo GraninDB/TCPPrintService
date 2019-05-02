@@ -20,6 +20,7 @@ public:
         QString localPrinterName;
         bool isActive;
         QHostAddress listen;
+        int interfaceWaitTime;
         quint16 port;
         QList<QPair<QHostAddress, int>> subnets;
         int log;

@@ -90,6 +90,13 @@ bool PrinterService::loadSettings()
             ds.listen = QHostAddress(address);
         }
 
+        int interfaceWaitTime = v.toObject().value("interfacewaittime").toInt();
+        if (interfaceWaitTime == 0) {
+            ds.interfaceWaitTime = 60;
+        } else {
+            ds.interfaceWaitTime = interfaceWaitTime;
+        }
+
         m_logger->logMessage("Listen address for printer \"" + ds.localPrinterName + "\" is " +
             ds.listen.toString() + " port " + QString::number(ds.port), Logger::Info);
 
