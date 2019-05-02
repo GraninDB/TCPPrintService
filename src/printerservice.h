@@ -25,6 +25,7 @@ private:
     QList<PrinterDaemon::DaemonSettings> m_daemonSettings;
     QList<PrinterDaemon*> m_daemons;
     Logger* m_logger = 0;
+    QString m_appDataFolder;
 };
 
 #endif // PRINTERSERVICE_H

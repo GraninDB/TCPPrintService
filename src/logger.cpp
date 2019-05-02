@@ -28,19 +28,19 @@ void Logger::setJournalType(Logger::JournalType type)
     if (m_journalType == TextFile) {
         QStringList paths = QStandardPaths::standardLocations(QStandardPaths::AppLocalDataLocation);
 
+        QDebug qI = qInfo();
+        qI.noquote();
+
         QString logName(paths.at(1) + "/TCPPrintService.log");
         m_file = new QFile(logName);
         if (!m_file->open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
             QtServiceBase::instance()->logMessage("Log file open error", QtServiceBase::MessageType::Information);
             delete m_file;
             m_file = nullptr;
-#ifdef LOG_TO_CONSOLE
-            qInfo() << "Couldn't open log file" << logName;
-#endif
+
+            qI << "Error  Couldn't open log file" << logName;
         } else {
-#ifdef LOG_TO_CONSOLE
-            qInfo() << "Log file name is" << logName;
-#endif
+            qI << "Info   Log file name is" << logName;
         }
     }
 }
@@ -51,7 +51,38 @@ void Logger::logMessage(const QString &msg, LogType logType)
         return;
     }
 
-    qInfo() << msg << logType;
+    QString strLogType;
+
+    switch (logType) {
+    case Print: {
+        strLogType = "Print";
+        break;
+    }
+    case Error: {
+        strLogType = "Error";
+        break;
+    }
+    case Debug: {
+        strLogType = "Debug";
+        break;
+    }
+    case Access: {
+        strLogType = "Access";
+        break;
+    }
+    case Info: {
+        strLogType = "Info";
+        break;
+    }
+    case None: {
+        break;
+    }
+    }
+
+    QDebug qI = qInfo();
+    qI.noquote();
+    qI << strLogType.leftJustified(7) + msg;
+
     switch (m_journalType) {
     case Unknown:{
         return;
@@ -65,33 +96,7 @@ void Logger::logMessage(const QString &msg, LogType logType)
         QDateTime dt(QDateTime::currentDateTime());
 
         out << dt.toString(Qt::ISODate) << " " ;
-
-        switch (logType) {
-        case Print: {
-            out << "Print  ";
-            break;
-        }
-        case Error: {
-            out << "Error  ";
-            break;
-        }
-        case Debug: {
-            out << "Debug  ";
-            break;
-        }
-        case Access: {
-            out << "Access ";
-            break;
-        }
-        case Info: {
-            out << "Info   ";
-            break;
-        }
-        case None: {
-            break;
-        }
-        }
-
+        out << strLogType.leftJustified(7);
         out << msg << "\n";
         return;
     }

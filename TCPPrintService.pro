@@ -9,8 +9,6 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-DEFINES += LOG_TO_CONSOLE
-
 INCLUDEPATH += \
     src \
 
